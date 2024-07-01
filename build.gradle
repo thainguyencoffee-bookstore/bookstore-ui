@@ -1,0 +1,32 @@
+plugins {
+  id "com.github.node-gradle.node" version "3.2.0"
+}
+
+node {
+	download = true
+	version = "16.14.0"
+}
+
+task generateAngularApp(type: NpxTask) {
+  command = '@angular/cli@13.2.6'
+  args = ['new', 'bookstore-ui', '--directory', '.']
+}
+
+task buildAngular(type: NpxTask) {
+  command = "ng"
+  args = ["build"]
+  dependsOn(tasks.npmInstall)
+  inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
+  inputs.dir("node_modules")
+  inputs.files("angular.json", "tsconfig.json", "tsconfig.app.json")
+  finalizedBy "nginxConfig"
+}
+
+task nginxConfig(type: Copy) {
+	from "nginx"
+	into "dist"
+}
+
+task clean(type: Delete) {
+	delete "dist"
+}
